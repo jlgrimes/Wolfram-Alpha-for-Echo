@@ -2,15 +2,16 @@
 This sample demonstrates a simple skill built with the Amazon Alexa Skills Kit.
 The Intent Schema, Custom Slots, and Sample Utterances for this skill, as well
 as testing instructions are located at http://amzn.to/1LzFrj6
-
 For additional samples, visit the Alexa Skills Kit Getting Started guide at
 http://amzn.to/1LGWsLG
 """
 
 from __future__ import print_function
-from xml.dom import minidom
+import xml.etree.ElementTree as etree
+
 try:
     from urllib.request import urlopen
+    from urllib.parse import urlencode
 except ImportError:
     # Python2
     from urllib2 import urlopen
@@ -81,7 +82,6 @@ def on_intent(intent_request, session):
 
 def on_session_ended(session_ended_request, session):
     """ Called when the user ends the session.
-
     Is not called when the skill returns should_end_session=true
     """
     print("on_session_ended requestId=" + session_ended_request['requestId'] +
@@ -112,28 +112,51 @@ def ask_wolfram_alpha(intent, session):
     should_end_session = False
     reprompt_text = "I didn't catch that. Care to try again?"
     speech_output = "Try asking me a question you'd ask Wolfram Alpha."
+    result = "null"
 
-    query = intent['slots']['response'].get('value')
-    query = query.replace(" ", "%20")
+    api_root = "http://api.wolframalpha.com/v2/"
 
-    api_root = "http://api.wolframalpha.com/v2/query?"
     appid = "TEL9QP-HYK7YETLXE"
 
-    url = api_root + "input=" + query + "&appid=" + appid
+    query = intent['slots']['response'].get('value')
+    if query:
 
-    resp = urlopen(url)
-    doc = minidom.parse(resp)
+        payload = {
+            'input': query,
+            'appid': appid,
+            'async': 'true',
+            'reinterpret': 'true'
+        }
+        
+        url = api_root + "query?" + urlencode(payload)
 
-    pods = doc.getElementsByTagName("pod")
+        resp = urlopen(url)
+        tree = etree.fromstring(resp.read())
+        
+        success = False
 
-    if "derivative" in query:
-        subpods = pods[0].getElementsByTagName("subpod")
-    else:
-        subpods = pods[1].getElementsByTagName("subpod")
+        try: # Tests for regular problems
+            # Return first subpod's plaintext
+            result = next(pod.find("subpod").find("plaintext").text
+                          for pod in tree
+                          if pod.attrib.get('title') == "Result")
+            should_end_session = True
+        except StopIteration:
+            success = True
+        
+        try: # Tests for derivative-based questions
+            # Return first subpod's plaintext
+            result = next(pod.find("subpod").find("plaintext").text
+                          for pod in tree
+                          if pod.attrib.get('title') == "Derivative")
+            should_end_session = True
+        except StopIteration:
+            success = True
+        
+        if success is False:
+            result = "No results for {}".format(query)
 
-    answer = subpods[0].getElementsByTagName("plaintext")[0]
-
-    speech_output = result
+        speech_output = result
 
     return build_response(session_attributes, build_speechlet_response(
         intent['name'], speech_output, reprompt_text, should_end_session))
