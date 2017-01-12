@@ -1,2 +1,2 @@
 # Wolfram-Alpha-for-Echo
-a python script that hooks wolfram alpha to the amazon echo
+A python script that hooks wolfram alpha to the amazon echo. Works with normal questions as well as calculus :D (hopefully)
