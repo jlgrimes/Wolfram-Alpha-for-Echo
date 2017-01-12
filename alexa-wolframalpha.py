@@ -116,7 +116,7 @@ def ask_wolfram_alpha(intent, session):
 
     api_root = "http://api.wolframalpha.com/v2/"
 
-    appid = "TEL9QP-HYK7YETLXE"
+    appid = "" # Enter your AppID here
 
     query = intent['slots']['response'].get('value')
     if query:
