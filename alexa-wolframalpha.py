@@ -133,28 +133,42 @@ def ask_wolfram_alpha(intent, session):
         resp = urlopen(url)
         tree = etree.fromstring(resp.read())
         
+        result = url
+        
         success = False
-
-        try: # Tests for regular problems
-            # Return first subpod's plaintext
-            result = next(pod.find("subpod").find("plaintext").text
-                          for pod in tree
-                          if pod.attrib.get('title') == "Result")
-            should_end_session = True
-        except StopIteration:
-            success = True
         
-        try: # Tests for derivative-based questions
-            # Return first subpod's plaintext
-            result = next(pod.find("subpod").find("plaintext").text
-                          for pod in tree
-                          if pod.attrib.get('title') == "Derivative")
-            should_end_session = True
-        except StopIteration:
-            success = True
+        if "anti derivative" in query:
+            try: # Tests for antiderivative-based questions
+                # Return first subpod's plaintext
+                result = next(pod.find("subpod").find("plaintext").text
+                              for pod in tree
+                              if pod.attrib.get('title') == "Indefinite integral")
+                should_end_session = True
+            except StopIteration:
+                success = True
+                
+        elif "derivative" in query:
+            try: # Tests for derivative-based questions
+                # Return first subpod's plaintext
+                result = next(pod.find("subpod").find("plaintext").text
+                              for pod in tree
+                              if pod.attrib.get('title') == "Derivative")
+                should_end_session = True
+            except StopIteration:
+                success = True
+                
+        else:
+            try: # Tests for regular problems
+                # Return first subpod's plaintext
+                result = next(pod.find("subpod").find("plaintext").text
+                              for pod in tree
+                              if pod.attrib.get('title') == "Result")
+                should_end_session = True
+            except StopIteration:
+                success = True
         
-        if success is False:
-            result = "No results for {}".format(query)
+        #if success is False:
+        #    result = "No results for {}".format(query)
 
         speech_output = result
 
