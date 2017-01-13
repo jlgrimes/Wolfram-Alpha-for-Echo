@@ -182,6 +182,11 @@ def ask_wolfram_alpha(intent, session):
                 should_end_session = True
             except StopIteration:
                 success = True
+        
+        result = result.replace("d/", "The derivative of ") # Replaces "d/" with "The derivative of "
+        result = result.replace("dx", " with respect to x ")
+        result = result.replace("integral", "The indefinite integral of ")
+        result = result.replace('/', " over ") # Reads 1/x as "one over x" rather than "one slash x"
                 
         speech_output = result
 
