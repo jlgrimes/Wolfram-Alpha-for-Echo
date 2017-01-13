@@ -116,7 +116,7 @@ def ask_wolfram_alpha(intent, session):
 
     api_root = "http://api.wolframalpha.com/v2/"
 
-    appid = "" # Enter your AppID here
+    appid = "TEL9QP-HYK7YETLXE" # Enter your AppID here
 
     query = intent['slots']['response'].get('value')
     if query:
@@ -133,11 +133,27 @@ def ask_wolfram_alpha(intent, session):
         resp = urlopen(url)
         tree = etree.fromstring(resp.read())
         
-        result = url
+        result = "No results for {}".format(query)
         
-        success = False
+        question = ""
         
         if "anti derivative" in query:
+            question = "integrate"
+        elif "integral" in query:
+            question = "integrate"
+        elif "integrate" in query:
+            question = "integrate"
+        elif "derivative" in query:
+            question = "derive"
+        elif "derive" in query:
+            question = "derive"
+        else:
+            question = "value"
+        
+        
+        success = False # For debugging purposes
+        
+        if question == "integrate":
             try: # Tests for antiderivative-based questions
                 # Return first subpod's plaintext
                 result = next(pod.find("subpod").find("plaintext").text
@@ -147,7 +163,7 @@ def ask_wolfram_alpha(intent, session):
             except StopIteration:
                 success = True
                 
-        elif "derivative" in query:
+        elif question == "derive":
             try: # Tests for derivative-based questions
                 # Return first subpod's plaintext
                 result = next(pod.find("subpod").find("plaintext").text
@@ -166,10 +182,7 @@ def ask_wolfram_alpha(intent, session):
                 should_end_session = True
             except StopIteration:
                 success = True
-        
-        #if success is False:
-        #    result = "No results for {}".format(query)
-
+                
         speech_output = result
 
     return build_response(session_attributes, build_speechlet_response(
