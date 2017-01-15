@@ -98,9 +98,9 @@ def get_welcome_response():
 
     session_attributes = {}
     card_title = "Welcome"
-    speech_output = "Ask a question to Wolcome message or says something
-    # that is not understood, they will belfram Alpha."
-    # If the user either does not reply to the we prompted again with this text.
+    speech_output = "Ask a question to Wolfram Alpha."
+    # If the user either does not reply to the welcome message or says something
+    # that is not understood, they will be prompted again with this text.
     reprompt_text = ("I didn't catch that. Ask a question for Wolfram Alpha.")
     should_end_session = False
     return build_response(session_attributes, build_speechlet_response(
@@ -134,7 +134,6 @@ def ask_wolfram_alpha(intent, session):
         tree = etree.fromstring(resp.read())
         
         result = "No results for {}".format(query)
-		# result = url # Uncomment for debugging, makes the failed speech output the url.
         
         question = "" # The question variable is what's going to be controlling what the program looks for in the WolframAlpha API .xml file output
         
@@ -186,11 +185,13 @@ def ask_wolfram_alpha(intent, session):
         
 		result = result.replace(".", " point ") # Reads "1.03" as "one point zero three"
         result = result.replace("d/dx", "The x derivative of ") # you get it by now
+        result = result.replace("dx", " with respect to x") # you get it by now
         result = result.replace("integral", "The indefinite integral of ") # just as it looks
-        result = result.replace('/', " over ") # Reads 1/x as "one over x" rather than "one slash x"
-                
+        result = result.replace("/", " over ") # Reads 1/x as "one over x" rather than "one slash x"
+        
         speech_output = result
-
+        
+    
     return build_response(session_attributes, build_speechlet_response(
         intent['name'], speech_output, reprompt_text, should_end_session))
 
