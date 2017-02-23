@@ -145,6 +145,8 @@ def ask_wolfram_alpha(intent, session):
             question = "integrate"
         elif "derivative" in query:
             question = "derive"
+	elif "differentiate" in query:
+            question = "derive"
         elif "derive" in query:
             question = "derive"
         else:
